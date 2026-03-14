@@ -59,10 +59,10 @@ export function PhotoUploader({ onPhotosUploaded }: PhotoUploaderProps) {
 
   return (
     <div
-      className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 p-8 text-center cursor-pointer ${
+      className={`relative border transition-all duration-300 p-24 text-center cursor-pointer min-h-[400px] flex flex-col items-center justify-center ${
         isDragging
-          ? "border-primary bg-primary/10 scale-[1.02]"
-          : "border-surface-lighter hover:border-accent/50 hover:bg-surface-light/50"
+          ? "border-main bg-slate-50"
+          : "border-dashed border-slate-300 hover:border-main hover:bg-slate-50"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -82,47 +82,32 @@ export function PhotoUploader({ onPhotosUploaded }: PhotoUploaderProps) {
       />
 
       {uploading ? (
-        <div className="space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-full border-4 border-primary border-t-transparent animate-spin" />
-          <p className="text-accent">Uploading memories...</p>
-          <div className="w-48 mx-auto h-2 bg-surface-lighter rounded-full overflow-hidden">
+        <div className="space-y-8 w-full max-w-sm mx-auto">
+          <p className="text-xs uppercase tracking-widest text-primary font-bold">Resurrecting...</p>
+          <div className="w-full h-[1px] bg-slate-100">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
+              className="h-full bg-primary transition-all duration-500 ease-out shadow-[0_0_10px_rgba(230,126,34,0.5)]"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-surface-lighter flex items-center justify-center">
-            <svg
-              className="w-8 h-8 text-accent"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <div>
-            <p className="text-lg font-medium text-white/90">
-              Drop your memories here
-            </p>
-            <p className="text-sm text-white/50 mt-1">
-              Upload photos from your life — we&apos;ll extract dates automatically
-              from EXIF data
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="text-sm uppercase tracking-widest text-primary font-bold">
+              Gather Memories
+            </h3>
+            <p className="text-xs text-muted max-w-xs mx-auto uppercase tracking-widest leading-loose font-medium">
+              Drop your moments here to bring them back to life.
             </p>
           </div>
-          <p className="text-xs text-white/30">
-            JPG, PNG, HEIC supported
-          </p>
+          <button className="px-10 py-4 border border-primary text-primary text-xs uppercase tracking-widest font-bold hover:bg-primary hover:text-white transition-all hover:shadow-lg hover:shadow-primary/20">
+            Choose Moments
+          </button>
         </div>
       )}
+
     </div>
   );
 }
+

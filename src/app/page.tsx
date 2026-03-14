@@ -5,6 +5,7 @@ import { PhotoUploader } from "@/components/PhotoUploader";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { VoiceInterface } from "@/components/VoiceInterface";
 import { WorldViewer } from "@/components/WorldViewer";
+import { NetworkBackground } from "@/components/NetworkBackground";
 import type { PhotoMetadata } from "@/lib/types";
 
 type AppView = "upload" | "main";
@@ -45,95 +46,97 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-transparent selection:bg-orange-100">
+      <NetworkBackground />
+      
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Memory Reliver</h1>
-              <p className="text-xs text-white/40">Powered by Marble AI + LiveKit</p>
-            </div>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-(--bg-main)">
+        <div className="max-w-screen-2xl mx-auto px-6 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-sm font-bold tracking-widest text-primary uppercase">
+              Memory Reliver
+            </h1>
           </div>
 
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-6">
             <button
               onClick={() => setView("upload")}
-              className={`px-4 py-2 rounded-xl text-sm transition-colors ${
+              className={`text-xs tracking-widest uppercase transition-colors font-bold ${
                 view === "upload"
-                  ? "bg-primary/20 text-primary"
-                  : "text-white/50 hover:text-white/80"
+                  ? "text-primary"
+                  : "text-muted hover:text-primary"
               }`}
             >
-              Upload
+              Add Photos
             </button>
             <button
               onClick={() => setView("main")}
-              className={`px-4 py-2 rounded-xl text-sm transition-colors ${
+              className={`text-xs tracking-widest uppercase transition-colors font-bold ${
                 view === "main"
-                  ? "bg-primary/20 text-primary"
-                  : "text-white/50 hover:text-white/80"
+                  ? "text-primary"
+                  : "text-muted hover:text-primary"
               }`}
             >
-              Relive
+              Explore
             </button>
-            {photos.length > 0 && (
-              <span className="px-3 py-1 rounded-full bg-surface-lighter text-xs text-white/50">
-                {photos.length} memories
-              </span>
-            )}
           </nav>
         </div>
       </header>
 
-      <div className="pt-24 pb-12 px-6">
+      <div className="pt-40 pb-20 px-6">
         {view === "upload" ? (
           /* Upload View */
-          <div className="max-w-3xl mx-auto space-y-8">
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-white via-accent to-primary bg-clip-text text-transparent">
-                Upload Your Memories
+          <div className="max-w-4xl mx-auto space-y-16">
+            <div className="text-center space-y-6">
+              <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-main">
+                Gather your memories.
               </h2>
-              <p className="text-white/50 max-w-lg mx-auto">
-                Drop in photos from your life. We&apos;ll read the dates from EXIF data
-                and make them searchable by voice.
+              <p className="text-xl text-muted max-w-2xl mx-auto font-light">
+                Add photos from your life. We&apos;ll help you step back into them whenever you like.
               </p>
             </div>
 
-            <PhotoUploader onPhotosUploaded={handlePhotosUploaded} />
-
-            <PhotoGallery photos={photos} />
+            <div className="bg-white/50 backdrop-blur-sm border border-slate-100 p-12">
+              <PhotoUploader onPhotosUploaded={handlePhotosUploaded} />
+            </div>
 
             {photos.length > 0 && (
-              <div className="text-center">
-                <button
-                  onClick={() => setView("main")}
-                  className="px-8 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 transition-transform"
-                >
-                  Start Reliving Memories
-                </button>
+              <div className="space-y-12">
+                <PhotoGallery photos={photos} />
+                
+                <div className="text-center pt-12">
+                  <button
+                    onClick={() => setView("main")}
+                    className="px-12 py-5 bg-primary text-white text-xs tracking-widest uppercase font-bold hover:bg-primary-dark transition-all hover:shadow-lg hover:shadow-primary/20"
+                  >
+                    Start Exploring
+                  </button>
+                </div>
               </div>
             )}
+            
+            {/* Minimal footer */}
+            <div className="w-full text-center pt-32 pb-8">
+               <p className="text-xs tracking-widest uppercase text-muted font-bold">
+                 © 2026 — SYSTEM ALIVE
+               </p>
+            </div>
           </div>
         ) : (
           /* Main Experience View */
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[70vh]">
-              {/* Left: Voice Interface + Photos */}
-              <div className="space-y-8">
-                <div className="glass rounded-2xl p-8">
+          <div className="max-w-screen-2xl mx-auto">
+            <div className="grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-12 min-h-[75vh]">
+              {/* Left Column: Voice Interface + Photos */}
+              <div className="space-y-12 pr-4 xl:border-r border-slate-100">
+                {/* Voice Card */}
+                <div className="bg-white/50 backdrop-blur-sm border border-slate-100 p-8">
                   <VoiceInterface onWorldGenerated={handleWorldGenerated} />
                 </div>
 
-                {/* Transcript / suggestions */}
-                <div className="glass rounded-2xl p-6 space-y-4">
-                  <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
-                    Try saying...
+                {/* Suggestions Card */}
+                <div>
+                  <h3 className="text-xs uppercase tracking-widest text-muted mb-6 font-bold">
+                    Suggested Prompts
                   </h3>
                   <div className="space-y-2">
                     {[
@@ -144,136 +147,132 @@ export default function Home() {
                     ].map((suggestion, i) => (
                       <div
                         key={i}
-                        className="px-4 py-3 rounded-xl bg-surface-lighter/50 text-sm text-white/60 hover:text-white/80 transition-colors cursor-default"
+                        className="py-3 border-b border-slate-50 text-sm text-main hover:text-primary transition-colors cursor-default"
                       >
-                        &ldquo;{suggestion}&rdquo;
+                        {suggestion}
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* Mini Gallery */}
                 {photos.length > 0 && (
-                  <PhotoGallery photos={photos} highlightedIds={highlightedPhotoIds} />
+                  <div>
+                    <PhotoGallery photos={photos} highlightedIds={highlightedPhotoIds} />
+                  </div>
                 )}
               </div>
 
-              {/* Right: World Viewer */}
-              <div className="space-y-6">
-                {isGeneratingWorld ? (
-                  <WorldViewer isGenerating />
-                ) : worldUrl || splatUrl ? (
-                  <button
-                    onClick={() => setShowLightbox(true)}
-                    className="w-full relative rounded-2xl overflow-hidden glass aspect-video group cursor-pointer"
-                  >
-                    {worldThumbnail ? (
-                      <img src={worldThumbnail} alt="World preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-surface-lighter" />
-                    )}
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-medium flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                        Explore World
-                      </div>
-                    </div>
-                    {worldCaption && (
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <div className="glass rounded-xl px-4 py-2">
-                          <p className="text-sm text-white/80 line-clamp-1 text-left">
-                            {worldCaption.split(". ")[0] + "."}
-                          </p>
+              {/* Right Column: World Viewer */}
+              <div className="space-y-12">
+                <div className="sticky top-40">
+                  {worldUrl || splatUrl ? (
+                    <button
+                      onClick={() => setShowLightbox(true)}
+                      className="w-full relative overflow-hidden bg-white border border-slate-100 aspect-video group cursor-pointer shadow-sm"
+                    >
+                      {worldThumbnail ? (
+                        <img src={worldThumbnail} alt="World preview" className="w-full h-full object-cover grayscale-50 group-hover:grayscale-0 transition-all duration-1000" />
+                      ) : (
+                        <div className="w-full h-full bg-slate-50 flex items-center justify-center">
+                           <span className="text-xs uppercase tracking-widest text-muted font-bold">World Ready</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="px-8 py-4 bg-primary text-white text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/40">
+                          Step Into Memory
                         </div>
                       </div>
-                    )}
-                  </button>
-                ) : (
-                  <WorldViewer />
-                )}
-
-                {generationError && (
-                  <div className="glass rounded-2xl p-6 text-center space-y-3">
-                    <p className="text-sm text-red-400">{generationError}</p>
-                    <button
-                      onClick={() => setGenerationError(null)}
-                      className="px-4 py-2 rounded-xl bg-surface-lighter text-white/70 hover:text-white transition-colors text-sm"
-                    >
-                      Dismiss
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <WorldViewer
+                      isGenerating={isGeneratingWorld}
+                    />
+                  )}
 
-                {/* World generation controls */}
-                {!worldUrl && !isGeneratingWorld && photos.length > 0 && (
-                  <div className="glass rounded-2xl p-6 text-center space-y-3">
-                    <p className="text-sm text-white/50">
-                      Ask the voice agent about a memory, or click a photo to generate
-                      a 3D world from it
-                    </p>
-                  </div>
-                )}
+                  {generationError && (
+                    <div className="mt-8 border border-red-100 p-6 text-center bg-white/50 backdrop-blur-sm">
+                      <p className="text-xs uppercase tracking-widest font-bold text-red-600">{generationError}</p>
+                      <button
+                        onClick={() => setGenerationError(null)}
+                        className="mt-4 text-[10px] tracking-widest uppercase text-red-600 hover:text-red-800 transition-colors font-bold underline underline-offset-4"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  )}
 
-                {/* Manual world generation for demo */}
-                {photos.length > 0 && !isGeneratingWorld && (
-                  <div className="glass rounded-2xl p-6 space-y-4">
-                    <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
-                      Quick Generate
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2">
-                      {photos.slice(0, 6).map((photo) => (
-                        <button
-                          key={photo.id}
-                          onClick={async () => {
-                            setIsGeneratingWorld(true);
-                            setGenerationError(null);
-                            setHighlightedPhotoIds([photo.id]);
-                            try {
-                              const res = await fetch("/api/generate-world", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  photoUrl: photo.url,
-                                  displayName: photo.description || photo.originalName,
-                                }),
-                              });
-                              const data = await res.json();
-                              if (data.error) {
-                                setGenerationError(data.details || data.error);
-                                setIsGeneratingWorld(false);
-                              } else if (data.worldUrl) {
-                                handleWorldGenerated(data.worldUrl, data.splatUrl);
-                                if (data.caption) setWorldCaption(data.caption);
-                                if (data.thumbnailUrl) setWorldThumbnail(data.thumbnailUrl);
-                              } else {
-                                setGenerationError("World generation timed out. Try again.");
+                  {!worldUrl && !isGeneratingWorld && photos.length > 0 && (
+                    <div className="mt-8 text-center bg-white/30 p-4 border border-dashed border-slate-200">
+                      <p className="text-xs text-muted font-bold uppercase tracking-widest">
+                        Talk to the assistant to generate a world.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Manual world generation for demo */}
+                  {photos.length > 0 && !isGeneratingWorld && (
+                    <div className="mt-12 bg-white/50 backdrop-blur-sm p-8 border border-slate-100">
+                      <h3 className="text-xs uppercase tracking-widest text-primary mb-8 text-center font-bold">
+                        Quick Generation Demo
+                      </h3>
+                      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                        {photos.slice(0, 16).map((photo) => (
+                          <button
+                            key={photo.id}
+                            title={photo.originalName}
+                            onClick={async () => {
+                              setIsGeneratingWorld(true);
+                              setGenerationError(null);
+                              setHighlightedPhotoIds([photo.id]);
+                              try {
+                                const res = await fetch("/api/generate-world", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    photoUrl: photo.url,
+                                    displayName: photo.description || photo.originalName,
+                                  }),
+                                });
+                                const data = await res.json();
+                                if (data.error) {
+                                  setGenerationError(data.details || data.error);
+                                  setIsGeneratingWorld(false);
+                                } else if (data.worldUrl) {
+                                  handleWorldGenerated(data.worldUrl, data.splatUrl);
+                                  if (data.caption) setWorldCaption(data.caption);
+                                  if (data.thumbnailUrl) setWorldThumbnail(data.thumbnailUrl);
+                                } else {
+                                  setGenerationError("Generation timed out. Try again.");
+                                  setIsGeneratingWorld(false);
+                                }
+                              } catch (err) {
+                                console.error("World generation failed:", err);
+                                setGenerationError(err instanceof Error ? err.message : "Failed to generate world");
                                 setIsGeneratingWorld(false);
                               }
-                            } catch (err) {
-                              console.error("World generation failed:", err);
-                              setGenerationError(err instanceof Error ? err.message : "World generation failed");
-                              setIsGeneratingWorld(false);
-                            }
-                          }}
-                          className="relative aspect-square rounded-xl overflow-hidden group hover:ring-2 hover:ring-primary transition-all"
-                        >
-                          <img
-                            src={photo.url}
-                            alt={photo.originalName}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                            </svg>
-                          </div>
-                        </button>
-                      ))}
+                            }}
+                            className="relative aspect-square overflow-hidden group hover:opacity-80 transition-opacity bg-slate-100 border border-slate-200"
+                          >
+                            <img
+                              src={photo.url}
+                              alt={photo.originalName}
+                              className="w-full h-full object-cover filter grayscale-50 group-hover:grayscale-0 transition-all duration-700"
+                            />
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
+            </div>
+            
+            {/* Minimal footer */}
+            <div className="w-full text-center pt-24 pb-8">
+               <p className="text-xs tracking-widest uppercase text-muted font-bold">
+                 © 2026 — SYSTEM ALIVE
+               </p>
             </div>
           </div>
         )}
@@ -281,24 +280,24 @@ export default function Home() {
 
       {/* Fullscreen Lightbox */}
       {showLightbox && (worldUrl || splatUrl) && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-[var(--bg-main)] flex flex-col">
           {/* Lightbox header */}
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100">
             <div>
-              <h2 className="text-lg font-semibold text-white">Your Memory World</h2>
+              <h2 className="text-sm font-bold tracking-widest uppercase text-primary">Your Memory World</h2>
               {worldCaption && (
-                <p className="text-sm text-white/50 max-w-2xl line-clamp-1">
+                <p className="text-xs text-muted uppercase tracking-widest mt-1 font-medium">
                   {worldCaption.split(". ").slice(0, 2).join(". ") + "."}
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               {worldUrl && (
                 <a
                   href={worldUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-surface-lighter text-sm text-white/70 hover:text-white transition-colors flex items-center gap-2"
+                  className="px-6 py-3 border border-primary text-xs text-primary font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -308,7 +307,7 @@ export default function Home() {
               )}
               <button
                 onClick={() => setShowLightbox(false)}
-                className="w-10 h-10 rounded-xl bg-surface-lighter flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                className="w-12 h-12 flex items-center justify-center text-primary border border-primary hover:bg-primary hover:text-white transition-all font-bold"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -318,17 +317,15 @@ export default function Home() {
           </div>
 
           {/* Fullscreen world viewer */}
-          <div className="flex-1 px-6 pb-6">
-            <div className="w-full h-full rounded-2xl overflow-hidden">
-              <WorldViewer
-                worldUrl={worldUrl}
-                splatUrl={splatUrl}
-                thumbnailUrl={worldThumbnail}
-                caption={worldCaption}
-                isGenerating={false}
-                fullscreen
-              />
-            </div>
+          <div className="flex-1">
+            <WorldViewer
+              worldUrl={worldUrl}
+              splatUrl={splatUrl}
+              thumbnailUrl={worldThumbnail}
+              caption={worldCaption}
+              isGenerating={false}
+              fullscreen
+            />
           </div>
         </div>
       )}
