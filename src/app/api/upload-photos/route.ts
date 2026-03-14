@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
 import { addPhoto } from "@/lib/photo-store";
 import type { PhotoMetadata } from "@/lib/types";
+
+const HEIC_EXTENSIONS = new Set([".heic", ".heif"]);
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -22,11 +25,17 @@ export async function POST(request: NextRequest) {
 
     for (const file of files) {
       const id = uuidv4();
-      const ext = path.extname(file.name) || ".jpg";
+      const originalExt = path.extname(file.name).toLowerCase() || ".jpg";
+      let buffer = Buffer.from(await file.arrayBuffer());
+
+      // Convert HEIC/HEIF to JPG since Marble API doesn't support them
+      const ext = HEIC_EXTENSIONS.has(originalExt) ? ".jpg" : originalExt;
+      if (HEIC_EXTENSIONS.has(originalExt)) {
+        buffer = await sharp(buffer).jpeg({ quality: 95 }).toBuffer();
+      }
+
       const filename = `${id}${ext}`;
       const filePath = path.join(UPLOAD_DIR, filename);
-
-      const buffer = Buffer.from(await file.arrayBuffer());
       await writeFile(filePath, buffer);
 
       // Try to extract EXIF date from the file
