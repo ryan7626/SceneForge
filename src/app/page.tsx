@@ -15,9 +15,11 @@ export default function Home() {
   const [worldUrl, setWorldUrl] = useState<string | undefined>();
   const [splatUrl, setSplatUrl] = useState<string | undefined>();
   const [worldCaption, setWorldCaption] = useState<string | undefined>();
+  const [worldThumbnail, setWorldThumbnail] = useState<string | undefined>();
   const [isGeneratingWorld, setIsGeneratingWorld] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [highlightedPhotoIds, setHighlightedPhotoIds] = useState<string[]>([]);
+  const [showLightbox, setShowLightbox] = useState(false);
 
   // Load existing photos on mount
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function Home() {
     setWorldUrl(url);
     if (splat) setSplatUrl(splat);
     setIsGeneratingWorld(false);
+    setShowLightbox(true);
   }, []);
 
   return (
@@ -156,12 +159,39 @@ export default function Home() {
 
               {/* Right: World Viewer */}
               <div className="space-y-6">
-                <WorldViewer
-                  worldUrl={worldUrl}
-                  splatUrl={splatUrl}
-                  caption={worldCaption}
-                  isGenerating={isGeneratingWorld}
-                />
+                {isGeneratingWorld ? (
+                  <WorldViewer isGenerating />
+                ) : worldUrl || splatUrl ? (
+                  <button
+                    onClick={() => setShowLightbox(true)}
+                    className="w-full relative rounded-2xl overflow-hidden glass aspect-video group cursor-pointer"
+                  >
+                    {worldThumbnail ? (
+                      <img src={worldThumbnail} alt="World preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-surface-lighter" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-medium flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                        Explore World
+                      </div>
+                    </div>
+                    {worldCaption && (
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <div className="glass rounded-xl px-4 py-2">
+                          <p className="text-sm text-white/80 line-clamp-1 text-left">
+                            {worldCaption.split(". ")[0] + "."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                ) : (
+                  <WorldViewer />
+                )}
 
                 {generationError && (
                   <div className="glass rounded-2xl p-6 text-center space-y-3">
@@ -215,6 +245,7 @@ export default function Home() {
                               } else if (data.worldUrl) {
                                 handleWorldGenerated(data.worldUrl, data.splatUrl);
                                 if (data.caption) setWorldCaption(data.caption);
+                                if (data.thumbnailUrl) setWorldThumbnail(data.thumbnailUrl);
                               } else {
                                 setGenerationError("World generation timed out. Try again.");
                                 setIsGeneratingWorld(false);
@@ -247,6 +278,60 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Fullscreen Lightbox */}
+      {showLightbox && (worldUrl || splatUrl) && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col">
+          {/* Lightbox header */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Your Memory World</h2>
+              {worldCaption && (
+                <p className="text-sm text-white/50 max-w-2xl line-clamp-1">
+                  {worldCaption.split(". ").slice(0, 2).join(". ") + "."}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              {worldUrl && (
+                <a
+                  href={worldUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-surface-lighter text-sm text-white/70 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Open in Marble
+                </a>
+              )}
+              <button
+                onClick={() => setShowLightbox(false)}
+                className="w-10 h-10 rounded-xl bg-surface-lighter flex items-center justify-center text-white/70 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Fullscreen world viewer */}
+          <div className="flex-1 px-6 pb-6">
+            <div className="w-full h-full rounded-2xl overflow-hidden">
+              <WorldViewer
+                worldUrl={worldUrl}
+                splatUrl={splatUrl}
+                thumbnailUrl={worldThumbnail}
+                caption={worldCaption}
+                isGenerating={false}
+                fullscreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

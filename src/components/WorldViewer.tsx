@@ -5,21 +5,25 @@ import { useEffect, useRef, useState } from "react";
 interface WorldViewerProps {
   worldUrl?: string;
   splatUrl?: string;
+  thumbnailUrl?: string;
   caption?: string;
   isGenerating?: boolean;
+  fullscreen?: boolean;
 }
 
 export function WorldViewer({
   worldUrl,
   splatUrl,
+  thumbnailUrl,
   caption,
   isGenerating = false,
+  fullscreen = false,
 }: WorldViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [useIframe, setUseIframe] = useState(true);
+  const [splatLoaded, setSplatLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const rendererInitialized = useRef(false);
 
-  // Try SparkJS renderer for splat URLs, fallback to iframe for worldUrl
   useEffect(() => {
     if (!splatUrl || !containerRef.current || rendererInitialized.current) return;
 
@@ -30,42 +34,82 @@ export function WorldViewer({
         const THREE = await import("three");
         const { SplatMesh } = await import("@sparkjsdev/spark");
         const { OrbitControls } = await import("three/examples/jsm/controls/OrbitControls.js");
+        const {
+          EffectComposer,
+          EffectPass,
+          RenderPass,
+          SMAAEffect,
+          SMAAPreset,
+          BloomEffect,
+          ToneMappingEffect,
+          ToneMappingMode,
+        } = await import("postprocessing");
 
         const container = containerRef.current!;
         const width = container.clientWidth;
         const height = container.clientHeight;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f0f1a);
+        scene.background = new THREE.Color(0x0a0a14);
 
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        camera.position.set(0, 1, 3);
+        const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+        camera.position.set(0, 0, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({
+          powerPreference: "high-performance",
+        });
         renderer.setSize(width, height);
         renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
         container.appendChild(renderer.domElement);
+
+        // Post-processing: SMAA anti-aliasing + subtle bloom + tone mapping
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        composer.addPass(
+          new EffectPass(
+            camera,
+            new SMAAEffect({ preset: SMAAPreset.ULTRA }),
+            new BloomEffect({
+              intensity: 0.15,
+              luminanceThreshold: 0.8,
+              luminanceSmoothing: 0.3,
+              mipmapBlur: true,
+            }),
+            new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
+          )
+        );
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
+        controls.dampingFactor = 0.1;
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
+        controls.autoRotateSpeed = 0.3;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.target.set(0, 0, -1);
+        controls.update();
 
-        const splats = new SplatMesh({ url: splatUrl });
+        // Place splat at origin with correct orientation
+        const splats = new SplatMesh({
+          url: splatUrl,
+          onLoad: () => {
+            setSplatLoaded(true);
+          },
+        });
+        splats.maxSh = 3;
+        splats.updateGenerator();
+        splats.position.set(0, 0, 0);
+        splats.quaternion.set(1, 0, 0, 0);
         scene.add(splats);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
+        rendererInitialized.current = true;
 
-        let animating = true;
-        function animate() {
-          if (!animating) return;
-          requestAnimationFrame(animate);
+        renderer.setAnimationLoop(() => {
           controls.update();
-          renderer.render(scene, camera);
-        }
-        animate();
+          composer.render();
+        });
 
         const handleResize = () => {
           const w = container.clientWidth;
@@ -73,21 +117,24 @@ export function WorldViewer({
           camera.aspect = w / h;
           camera.updateProjectionMatrix();
           renderer.setSize(w, h);
+          composer.setSize(w, h);
         };
         window.addEventListener("resize", handleResize);
 
-        setUseIframe(false);
-        rendererInitialized.current = true;
-
         cleanup = () => {
-          animating = false;
+          renderer.setAnimationLoop(null);
           window.removeEventListener("resize", handleResize);
+          controls.dispose();
+          splats.dispose();
+          composer.dispose();
           renderer.dispose();
-          container.removeChild(renderer.domElement);
+          if (container.contains(renderer.domElement)) {
+            container.removeChild(renderer.domElement);
+          }
         };
       } catch (err) {
-        console.warn("SparkJS renderer failed, falling back to iframe:", err);
-        setUseIframe(true);
+        console.error("SparkJS renderer failed:", err);
+        setLoadError(err instanceof Error ? err.message : "Failed to load 3D world");
       }
     }
 
@@ -100,7 +147,6 @@ export function WorldViewer({
     return (
       <div className="relative rounded-2xl overflow-hidden glass aspect-video flex items-center justify-center">
         <div className="text-center space-y-6">
-          {/* Animated orb */}
           <div className="relative w-24 h-24 mx-auto">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent opacity-30 animate-ping" />
             <div className="absolute inset-2 rounded-full bg-gradient-to-br from-primary to-accent opacity-50 animate-float" />
@@ -141,28 +187,65 @@ export function WorldViewer({
     );
   }
 
+  const shortCaption = caption
+    ? caption.split(". ").slice(0, 2).join(". ") + "."
+    : undefined;
+
+  const sizeClass = fullscreen ? "w-full h-full" : "aspect-video w-full";
+
   return (
-    <div className="relative rounded-2xl overflow-hidden glass">
-      {caption && (
+    <div className={`relative rounded-2xl overflow-hidden glass ${fullscreen ? "w-full h-full" : ""}`}>
+      {shortCaption && splatLoaded && !fullscreen && (
         <div className="absolute top-4 left-4 right-4 z-10">
           <div className="glass rounded-xl px-4 py-2">
-            <p className="text-sm text-white/80">{caption}</p>
+            <p className="text-sm text-white/80 line-clamp-2">{shortCaption}</p>
           </div>
         </div>
       )}
 
-      <div ref={containerRef} className="aspect-video w-full">
-        {useIframe && worldUrl && (
-          <iframe
-            src={worldUrl}
-            className="w-full h-full border-0"
-            allow="autoplay; fullscreen; xr-spatial-tracking"
-            allowFullScreen
-          />
+      {/* 3D splat renderer container */}
+      <div ref={containerRef} className={sizeClass}>
+        {/* Show thumbnail while splat loads */}
+        {!splatLoaded && !loadError && thumbnailUrl && (
+          <div className="w-full h-full relative">
+            <img src={thumbnailUrl} alt="World preview" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          </div>
+        )}
+
+        {/* Error fallback */}
+        {loadError && (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8">
+            {thumbnailUrl && (
+              <img src={thumbnailUrl} alt="World preview" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+            )}
+            <p className="text-sm text-red-400 relative z-10">{loadError}</p>
+            {worldUrl && (
+              <a
+                href={worldUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 transition-transform"
+              >
+                Open in Marble
+              </a>
+            )}
+          </div>
         )}
       </div>
 
-      {worldUrl && (
+      {/* Controls overlay */}
+      {splatLoaded && (
+        <div className="absolute bottom-4 left-4 z-10">
+          <div className="glass rounded-xl px-3 py-1.5">
+            <p className="text-xs text-white/50">Drag to look around</p>
+          </div>
+        </div>
+      )}
+
+      {worldUrl && !fullscreen && (
         <div className="absolute bottom-4 right-4 z-10">
           <a
             href={worldUrl}

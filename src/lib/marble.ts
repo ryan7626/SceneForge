@@ -69,6 +69,7 @@ export async function generateWorldFromImage(
   const body: Record<string, unknown> = {
     display_name: displayName,
     model: "Marble 0.1-mini",
+    permission: { public: true },
     world_prompt: {
       type: "image",
       image_prompt: {
@@ -105,6 +106,7 @@ export async function generateWorldFromUrl(
   const body: Record<string, unknown> = {
     display_name: displayName,
     model: "Marble 0.1-mini",
+    permission: { public: true },
     world_prompt: {
       type: "image",
       image_prompt: {
@@ -149,6 +151,7 @@ export async function pollOperation(
   const data = await res.json();
 
   if (data.done && data.response) {
+    console.log("Marble poll complete, assets:", JSON.stringify(data.response.assets, null, 2));
     return {
       done: true,
       world: {

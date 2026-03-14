@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
             caption: result.world.caption,
             thumbnailUrl: result.world.thumbnailUrl,
             panoramaUrl: result.world.panoramaUrl,
-            splatUrl: result.world.splatUrls?.["500k"] || result.world.splatUrls?.full_res,
+            splatUrl: result.world.splatUrls?.full_res || result.world.splatUrls?.["500k"],
           });
         }
       } catch (pollError) {
