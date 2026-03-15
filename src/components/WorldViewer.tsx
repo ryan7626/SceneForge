@@ -36,6 +36,9 @@ export function WorldViewer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [loadPhase, setLoadPhase] = useState<"init" | "low" | "medium" | "high" | "done">("init");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [vrSupported, setVrSupported] = useState(false);
+  const [vrActive, setVrActive] = useState(false);
+  const rendererRef = useRef<any>(null);
 
   useEffect(() => {
     const hasSplat = splatUrl || splatUrls?.full_res || splatUrls?.["500k"] || splatUrls?.["100k"];
@@ -356,6 +359,41 @@ export function WorldViewer({
           >
             Expand View
           </a>
+        </div>
+      )}
+
+      {/* Enter VR button */}
+      {vrSupported && fullscreen && splatLoaded && !vrActive && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20">
+          <button
+            onClick={async () => {
+              const renderer = rendererRef.current;
+              if (!renderer || !navigator.xr) return;
+              try {
+                const session = await navigator.xr.requestSession("immersive-vr", {
+                  optionalFeatures: ["local-floor", "bounded-floor"],
+                });
+                // Offset VR origin: 2m back, 1.5m up from splat center
+                const refSpace = await session.requestReferenceSpace("local-floor");
+                const offset = new XRRigidTransform(
+                  { x: 0, y: -1.5, z: -3, w: 1 }
+                );
+                renderer.xr.setReferenceSpace(refSpace.getOffsetReferenceSpace(offset));
+                renderer.xr.setSession(session);
+                setVrActive(true);
+                session.addEventListener("end", () => setVrActive(false));
+              } catch (err) {
+                console.error("Failed to enter VR:", err);
+              }
+            }}
+            className="px-10 py-4 bg-primary text-white text-xs uppercase tracking-widest font-bold hover:bg-primary-dark transition-all shadow-2xl shadow-primary/40 flex items-center gap-3"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Enter VR
+          </button>
         </div>
       )}
     </div>

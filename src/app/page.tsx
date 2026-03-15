@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PhotoUploader } from "@/components/PhotoUploader";
-import { PhotoGallery } from "@/components/PhotoGallery";
 import { VoiceInterface } from "@/components/VoiceInterface";
 import { WorldViewer, applySceneEditGlobal } from "@/components/WorldViewer";
 import { SceneEditBar } from "@/components/SceneEditBar";
-import { NetworkBackground } from "@/components/NetworkBackground";
+import { GlobeView } from "@/components/GlobeView";
 import type { PhotoMetadata } from "@/lib/types";
 
 const SUGGESTIONS = [
@@ -25,7 +24,6 @@ export default function Home() {
   const [worldThumbnail, setWorldThumbnail] = useState<string | undefined>();
   const [isGeneratingWorld, setIsGeneratingWorld] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const [highlightedPhotoIds, setHighlightedPhotoIds] = useState<string[]>([]);
   const [showLightbox, setShowLightbox] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -48,6 +46,7 @@ export default function Home() {
 
   const handlePhotosUploaded = useCallback((newPhotos: PhotoMetadata[]) => {
     setPhotos((prev) => [...prev, ...newPhotos]);
+    setShowUploader(false);
   }, []);
 
   const handleWorldGenerated = useCallback((url: string, splat?: string, allSplatUrls?: { "100k"?: string; "500k"?: string; full_res?: string }) => {
@@ -57,6 +56,61 @@ export default function Home() {
     setIsGeneratingWorld(false);
     setShowLightbox(true);
   }, []);
+
+  const generateFromPhoto = useCallback(async (photo: PhotoMetadata) => {
+    setSelectedPhoto(photo);
+    setIsGeneratingWorld(true);
+    setGenerationError(null);
+    try {
+      const res = await fetch("/api/generate-world", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          photoUrl: photo.url,
+          photoId: photo.id,
+          displayName: photo.description || photo.originalName,
+          metadata: {
+            dateTaken: photo.dateTaken,
+            latitude: photo.location?.latitude,
+            longitude: photo.location?.longitude,
+            cameraMake: photo.camera?.make,
+            cameraModel: photo.camera?.model,
+            width: photo.width,
+            height: photo.height,
+            originalName: photo.originalName,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setGenerationError(data.details || data.error);
+        setIsGeneratingWorld(false);
+      } else if (data.worldUrl) {
+        handleWorldGenerated(data.worldUrl, data.splatUrl);
+        if (data.caption) setWorldCaption(data.caption);
+        if (data.thumbnailUrl) setWorldThumbnail(data.thumbnailUrl);
+      } else {
+        setGenerationError("Generation timed out. Try again.");
+        setIsGeneratingWorld(false);
+      }
+    } catch (err) {
+      console.error("World generation failed:", err);
+      setGenerationError(err instanceof Error ? err.message : "Failed to generate world");
+      setIsGeneratingWorld(false);
+    }
+  }, [handleWorldGenerated]);
+
+  // Close uploader on click outside
+  useEffect(() => {
+    if (!showUploader) return;
+    const handleClick = (e: MouseEvent) => {
+      if (uploaderRef.current && !uploaderRef.current.contains(e.target as Node)) {
+        setShowUploader(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showUploader]);
 
   return (
     <main className="min-h-screen bg-transparent">
