@@ -59,13 +59,13 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-transparent selection:bg-orange-100">
+    <main className="min-h-screen bg-transparent">
       <NetworkBackground />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent spatial-header __enableXr__">
-        <div className="max-w-screen-2xl mx-auto px-6 py-6 flex items-center justify-between">
-          <h1 className="text-sm font-bold tracking-widest text-primary uppercase">
+      <header className="fixed top-0 left-0 right-0 z-50 spatial-header __enableXr__">
+        <div className="max-w-screen-2xl mx-auto px-6 py-5 flex items-center justify-between">
+          <h1 className="text-xs font-light tracking-[0.3em] text-white/70 uppercase">
             SceneForge
           </h1>
         </div>
@@ -74,34 +74,50 @@ export default function Home() {
       {/* ── Drawer toggle (left edge) ── */}
       <button
         onClick={() => setDrawerOpen(!drawerOpen)}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-40 w-6 h-16 bg-white/80 backdrop-blur-md border border-l-0 border-slate-200 flex items-center justify-center hover:bg-primary/10 transition-colors rounded-r-lg shadow-sm group"
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-40 w-5 h-14 glass flex items-center justify-center hover:bg-white/10 transition-colors rounded-r-lg group border-l-0"
         title={drawerOpen ? "Close archive" : "Open archive"}
       >
         <svg
-          className={`w-3.5 h-3.5 text-muted group-hover:text-primary transition-all duration-300 ${drawerOpen ? "rotate-180" : ""}`}
+          className={`w-3 h-3 text-white/30 group-hover:text-white/70 transition-all duration-300 ${drawerOpen ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
-      {/* ── Photos / Upload drawer ── */}
+      {/* ── Photos / Upload drawer (glassmorphism) ── */}
       <div
-        className={`fixed left-0 top-0 bottom-0 z-30 w-80 bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-xl transition-transform duration-300 ease-out overflow-y-auto ${
+        className={`fixed left-0 top-0 bottom-0 z-30 w-96 glass-strong shadow-2xl shadow-black/30 transition-transform duration-300 ease-out overflow-y-auto ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="pt-24 px-6 pb-8 space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs uppercase tracking-widest text-primary font-bold">Photo Archive</h2>
-            <button onClick={() => setDrawerOpen(false)} className="text-muted hover:text-main transition-colors">
+            <h2 className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-light">Photo Archive</h2>
+            <button onClick={() => setDrawerOpen(false)} className="text-white/30 hover:text-white/70 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <PhotoUploader onPhotosUploaded={handlePhotosUploaded} />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <PhotoUploader onPhotosUploaded={handlePhotosUploaded} />
+            </div>
+            <button
+              className="flex-shrink-0 w-[52px] h-[52px] border border-dashed border-slate-300 hover:border-primary hover:bg-slate-50 transition-all flex items-center justify-center group"
+              title="Import from Google Photos"
+              onClick={() => window.open("https://photos.google.com", "_blank")}
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h1V12H7.38l.72-1.2L12 4.36V2z" fill="#EA4335"/>
+                <path d="M12 2v2.36l3.9 6.44L16.62 12H13v10h-1c5.52 0 10-4.48 10-10S17.52 2 12 2z" fill="#4285F4"/>
+                <path d="M2 12c0 5.52 4.48 10 10 10v-10H2z" fill="#34A853"/>
+                <path d="M12 12h10c0-5.52-4.48-10-10-10v10z" fill="#FBBC05"/>
+              </svg>
+            </button>
+          </div>
 
           {photos.length > 0 && (
             <PhotoGallery photos={photos} highlightedIds={highlightedPhotoIds} />
@@ -110,9 +126,9 @@ export default function Home() {
       </div>
 
       {/* ── Main layout ── */}
-      <div className="pt-24 pb-20 px-6">
+      <div className="pt-20 pb-20 px-6">
         <div className="max-w-screen-2xl mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-[400px_1fr] gap-12 min-h-[80vh]">
+          <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-12 min-h-[85vh]">
 
             {/* Left Column: Voice Orb + Suggestions */}
             <div className="flex flex-col items-center justify-center gap-8">
@@ -120,13 +136,13 @@ export default function Home() {
 
               {/* Example prompts */}
               <div className="w-full max-w-xs space-y-2">
-                <p className="text-[10px] uppercase tracking-widest text-muted font-bold text-center mb-3">
+                <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-light text-center mb-3">
                   Try saying...
                 </p>
                 {SUGGESTIONS.map((s, i) => (
                   <div
                     key={i}
-                    className="px-4 py-2.5 bg-white/60 backdrop-blur-sm border border-slate-200 text-xs text-main tracking-wide hover:border-primary/40 hover:text-primary transition-colors cursor-default text-center"
+                    className="px-4 py-2.5 glass text-[11px] text-white/50 tracking-wide hover:text-white/80 hover:border-white/20 transition-all cursor-default text-center rounded-lg"
                   >
                     {s}
                   </div>
@@ -136,21 +152,21 @@ export default function Home() {
 
             {/* Right Column: World Viewer */}
             <div className="space-y-8">
-              <div className="sticky top-24">
+              <div className="sticky top-20">
                 {worldUrl || splatUrl ? (
                   <button
                     onClick={() => setShowLightbox(true)}
-                    className="w-full relative overflow-hidden bg-white border border-slate-100 aspect-video group cursor-pointer shadow-sm"
+                    className="w-full relative overflow-hidden glass aspect-video group cursor-pointer rounded-xl"
                   >
                     {worldThumbnail ? (
-                      <img src={worldThumbnail} alt="World preview" className="w-full h-full object-cover grayscale-50 group-hover:grayscale-0 transition-all duration-1000" />
+                      <img src={worldThumbnail} alt="World preview" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-1000" />
                     ) : (
-                      <div className="w-full h-full bg-slate-50 flex items-center justify-center">
-                        <span className="text-xs uppercase tracking-widest text-muted font-bold">World Ready</span>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-light">World Ready</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="px-8 py-4 bg-primary text-white text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/40">
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="px-6 py-3 glass text-white/80 text-[10px] font-light uppercase tracking-[0.2em] rounded-full">
                         Step Into Memory
                       </div>
                     </div>
@@ -160,11 +176,11 @@ export default function Home() {
                 )}
 
                 {generationError && (
-                  <div className="mt-6 border border-red-100 p-4 text-center bg-white/50 backdrop-blur-sm">
-                    <p className="text-xs uppercase tracking-widest font-bold text-red-600">{generationError}</p>
+                  <div className="mt-6 glass rounded-lg p-4 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.15em] font-light text-red-400">{generationError}</p>
                     <button
                       onClick={() => setGenerationError(null)}
-                      className="mt-3 text-[10px] tracking-widest uppercase text-red-600 hover:text-red-800 font-bold underline underline-offset-4"
+                      className="mt-3 text-[9px] tracking-[0.15em] uppercase text-red-400/60 hover:text-red-400 font-light underline underline-offset-4"
                     >
                       Dismiss
                     </button>
@@ -172,8 +188,8 @@ export default function Home() {
                 )}
 
                 {!worldUrl && !isGeneratingWorld && (
-                  <div className="mt-6 text-center bg-white/30 p-4 border border-dashed border-slate-200">
-                    <p className="text-xs text-muted font-bold uppercase tracking-widest">
+                  <div className="mt-6 text-center glass rounded-lg p-4">
+                    <p className="text-[10px] text-white/30 font-light uppercase tracking-[0.15em]">
                       Talk to the assistant or open the archive to generate a world.
                     </p>
                   </div>
@@ -188,12 +204,12 @@ export default function Home() {
       {photos.length > 0 && !hasScrolled && (
         <button
           onClick={() => vaultsRef.current?.scrollIntoView({ behavior: "smooth" })}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1 animate-pulse cursor-pointer group"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 cursor-pointer group"
         >
-          <span className="text-[10px] uppercase tracking-widest text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/25 font-light group-hover:text-white/50 transition-colors">
             Example Vaults
           </span>
-          <svg className="w-4 h-4 text-muted group-hover:text-primary transition-colors animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-colors animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
@@ -203,11 +219,11 @@ export default function Home() {
       {photos.length > 0 && (
         <div ref={vaultsRef} className="px-6 pb-24">
           <div className="max-w-screen-2xl mx-auto">
-            <div className="border-t border-slate-100 pt-16">
-              <h2 className="text-xs uppercase tracking-widest text-primary font-bold text-center mb-2">
+            <div className="border-t border-white/5 pt-16">
+              <h2 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-light text-center mb-2">
                 Example Vaults
               </h2>
-              <p className="text-[10px] uppercase tracking-widest text-muted font-bold text-center mb-10">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-white/20 font-light text-center mb-10">
                 Select a memory to generate its world
               </p>
 
@@ -215,15 +231,15 @@ export default function Home() {
                 {photos.slice(0, 18).map((photo) => (
                   <div
                     key={photo.id}
-                    className="group relative aspect-square overflow-hidden bg-slate-100 border border-slate-200 hover:border-primary/40 transition-all"
+                    className="group relative aspect-square overflow-hidden glass rounded-lg hover:border-white/20 transition-all"
                   >
                     <img
                       src={photo.url}
                       alt={photo.originalName}
-                      className="w-full h-full object-cover grayscale-50 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                     />
                     {/* Hover overlay with two actions */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2">
                       <button
                         disabled={isGeneratingWorld}
                         onClick={async () => {
@@ -268,14 +284,14 @@ export default function Home() {
                             setIsGeneratingWorld(false);
                           }
                         }}
-                        className="w-8 h-8 rounded-full bg-white/90 hover:bg-primary hover:text-white text-primary flex items-center justify-center transition-all shadow-md disabled:opacity-50"
+                        className="w-8 h-8 rounded-full glass hover:bg-white/20 text-white/80 flex items-center justify-center transition-all disabled:opacity-50"
                         title="Generate world"
                       >
                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                       </button>
                       <button
                         onClick={() => setPhotos((prev) => prev.filter((p) => p.id !== photo.id))}
-                        className="w-8 h-8 rounded-full bg-white/90 hover:bg-red-500 hover:text-white text-red-400 flex items-center justify-center transition-all shadow-md"
+                        className="w-8 h-8 rounded-full glass hover:bg-red-500/30 text-white/50 hover:text-red-300 flex items-center justify-center transition-all"
                         title="Remove"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -291,20 +307,20 @@ export default function Home() {
 
       {/* Fullscreen Lightbox */}
       {showLightbox && (worldUrl || splatUrl) && (
-        <div className="fixed inset-0 z-100 bg-(--bg-main) spatial-lightbox spatial-world __enableXr__">
-          <div className="absolute top-8 right-8 z-110 flex items-center gap-4 group/controls">
+        <div className="fixed inset-0 z-100 bg-black spatial-lightbox spatial-world __enableXr__">
+          <div className="absolute top-8 right-8 z-110 flex items-center gap-3">
             {worldCaption && (
               <div className="relative group/info">
-                <div className="w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-md text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all font-bold shadow-xl cursor-help">
+                <div className="w-10 h-10 flex items-center justify-center glass rounded-full text-white/50 hover:text-white/80 transition-all cursor-help">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="absolute top-14 right-0 w-80 p-6 bg-white/95 backdrop-blur-xl border border-primary/20 shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/info:opacity-100 group-hover/info:translate-y-0 transition-all duration-300">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-black mb-3 border-b border-primary/10 pb-2">
+                <div className="absolute top-12 right-0 w-72 p-5 glass-strong rounded-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/info:opacity-100 group-hover/info:translate-y-0 transition-all duration-300">
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/40 font-light mb-2">
                     Memory Reconstruction
                   </p>
-                  <p className="text-xs text-main leading-relaxed tracking-wide font-medium italic">
+                  <p className="text-xs text-white/70 leading-relaxed tracking-wide font-light italic">
                     &ldquo;{worldCaption}&rdquo;
                   </p>
                 </div>
@@ -315,7 +331,7 @@ export default function Home() {
                 href={worldUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-white/10 backdrop-blur-md border border-primary/20 text-xs text-primary font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-2 shadow-xl"
+                className="px-5 py-2.5 glass rounded-full text-[10px] text-white/60 font-light uppercase tracking-[0.15em] hover:text-white/90 hover:bg-white/10 transition-all flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -325,7 +341,7 @@ export default function Home() {
             )}
             <button
               onClick={() => setShowLightbox(false)}
-              className="w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-md text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all font-bold shadow-xl"
+              className="w-10 h-10 flex items-center justify-center glass rounded-full text-white/50 hover:text-white/80 transition-all"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -151,15 +151,15 @@ export function VoiceInterface({ onWorldGenerated: _onWorldGenerated }: VoiceInt
       </button>
 
       {/* Label */}
-      <p className="text-[10px] uppercase tracking-widest text-muted font-bold">
+      <p className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-light">
         {isConnecting ? "Connecting..." : "Tap to start"}
       </p>
 
       {/* Error */}
       {error && (
         <div className="text-center space-y-2">
-          <p className="text-[10px] uppercase tracking-widest text-red-500 font-bold">{error}</p>
-          <button onClick={() => { setError(null); connect(); }} className="text-[10px] uppercase tracking-widest text-primary font-bold hover:underline underline-offset-4">
+          <p className="text-[9px] uppercase tracking-[0.15em] text-red-400/70 font-light">{error}</p>
+          <button onClick={() => { setError(null); connect(); }} className="text-[9px] uppercase tracking-[0.15em] text-white/40 font-light hover:text-white/70 underline underline-offset-4">
             Retry
           </button>
         </div>
