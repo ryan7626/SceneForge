@@ -32,14 +32,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "command is required" }, { status: 400 });
     }
 
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.featherless.ai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.FEATHERLESS_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: "Qwen/Qwen2.5-72B-Instruct",
         temperature: 0.3,
         response_format: { type: "json_object" },
         messages: [

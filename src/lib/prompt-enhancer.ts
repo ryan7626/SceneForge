@@ -2,17 +2,14 @@ import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { reverseGeocode } from "./geocoder";
 
-// Use OpenRouter-compatible endpoint since the project key is an OpenRouter key
-const openrouter = createOpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENAI_API_KEY,
-  headers: {
-    "HTTP-Referer": "https://github.com/memory-reliver", // Required by OpenRouter
-    "X-Title": "Memory Reliver",
-  },
+// Use Featherless.ai for high-quality open-source models
+const featherless = createOpenAI({
+  baseURL: "https://api.featherless.ai/v1", // Most providers need /v1
+  apiKey: process.env.FEATHERLESS_API_KEY,
 });
 
-const model = openrouter("openai/gpt-4o-mini");
+// Explicitly use the chat model interface to avoid the /v1/responses (completions) fallback
+const model = featherless.chat("Qwen/Qwen2.5-72B-Instruct");
 
 interface PhotoContext {
   dateTaken?: string | null;
@@ -30,23 +27,35 @@ interface PhotoContext {
 export async function enhancePrompt(context: PhotoContext): Promise<string> {
   const metadataParts: string[] = [];
 
-  // 1. Resolve GPS to a real place name
+  // 1. Resolve GPS to a real place name — specific first, broad as fallback
   if (context.latitude && context.longitude) {
     const geo = await reverseGeocode(context.latitude, context.longitude);
     if (geo) {
-      const locationParts = [
+      // Tight/specific location (what Marble should try to match)
+      const specificParts = [
         geo.landmark,
+        geo.road,
         geo.neighbourhood,
-        geo.city,
-        geo.state,
-        geo.country
       ].filter(Boolean);
 
-      metadataParts.push(`Location: ${locationParts.join(", ")}`);
-      metadataParts.push(`Full Address: ${geo.placeName}`);
+      // Broad/general region (fallback context if Marble doesn't recognize the specific spot)
+      const broadParts = [
+        geo.city,
+        geo.district,
+        geo.state,
+        geo.country,
+      ].filter(Boolean);
+
+      if (specificParts.length > 0) {
+        metadataParts.push(`Exact Location: ${specificParts.join(", ")}`);
+      }
+      if (broadParts.length > 0) {
+        metadataParts.push(`Region: ${broadParts.join(", ")}`);
+      }
+      metadataParts.push(`GPS: ${context.latitude.toFixed(6)}, ${context.longitude.toFixed(6)}`);
     } else {
       metadataParts.push(
-        `GPS Coordinates: ${context.latitude.toFixed(4)}, ${context.longitude.toFixed(4)}`
+        `GPS Coordinates: ${context.latitude.toFixed(6)}, ${context.longitude.toFixed(6)}`
       );
     }
   }
@@ -95,20 +104,18 @@ export async function enhancePrompt(context: PhotoContext): Promise<string> {
   try {
     const { text } = await generateText({
       model: model,
-      system: `You are a world-building expert for a 3D spatial reconstruction AI. Your job is to write an immersive, hyper-specific scene description that guides the AI to create a stunning 360° 3D environment from a single photograph.
+      system: `You write short scene descriptions for a 3D environment generator. You ONLY use the metadata provided — do NOT invent or assume any details not given.
 
-CRITICAL RULES:
-1. If a LOCATION is provided, you MUST research your knowledge of that exact place and describe its real-world characteristics — the architecture, vegetation, terrain, nearby landmarks, typical weather, and cultural atmosphere.
-2. Use the TIME OF DAY and SEASON to set precise lighting: sun angle, shadow direction, sky gradient colors, ambient light temperature.
-3. Describe the FULL 360° environment — what's in front, behind, left, right, above, and below the camera. The AI needs to generate the parts of the scene that the photo doesn't show.
-4. Be specific about materials and textures: concrete sidewalks, wet asphalt, weathered wood, ocean spray, etc.
-5. Write 2-3 dense sentences. No fluff, no generic descriptions. Every word should add spatial information.
-6. NEVER mention cameras, photographers, photos, or images. Describe a LIVING PLACE, not a picture.
-7. Do NOT start with "The scene is" or "This is". Jump straight into the description.`,
+RULES:
+1. ONLY describe what the metadata tells you: location name, time of day, season, lighting conditions.
+2. Do NOT hallucinate landmarks, architecture, vegetation, materials, or cultural details unless explicitly stated in the metadata.
+3. Keep it to 1-2 short sentences focused on lighting and atmosphere.
+4. Use the time of day and season purely to describe lighting (e.g. "warm golden-hour light", "overcast winter midday").
+5. If a location is given, mention it by name but do NOT describe what it looks like.
+6. NEVER mention cameras, photos, or images.
+7. Do NOT start with "The scene is" or "This is".`,
 
-      prompt: `Write a 360° spatial scene description for a 3D world reconstruction.${metadataBlock}
-
-Generate a vivid, location-accurate, lighting-aware description of this environment.`,
+      prompt: `Write a brief, factual scene description using ONLY the metadata below. Do not add any details beyond what is provided.${metadataBlock}`,
     });
 
     return text;

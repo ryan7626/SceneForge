@@ -10,6 +10,9 @@ interface GeoResult {
   country?: string;
   neighbourhood?: string;
   landmark?: string;
+  road?: string;
+  district?: string;
+  postcode?: string;
 }
 
 export async function reverseGeocode(
@@ -18,7 +21,7 @@ export async function reverseGeocode(
 ): Promise<GeoResult | null> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=16&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=18&addressdetails=1`,
       {
         headers: {
           "User-Agent": "MemoryReliver/1.0 (hackathon project)",
@@ -38,6 +41,9 @@ export async function reverseGeocode(
       country: addr.country,
       neighbourhood: addr.neighbourhood || addr.suburb || addr.quarter,
       landmark: addr.tourism || addr.historic || addr.amenity || addr.building,
+      road: addr.road || addr.pedestrian || addr.path,
+      district: addr.county || addr.state_district || addr.district,
+      postcode: addr.postcode,
     };
   } catch (error) {
     console.warn("Reverse geocoding failed:", error);

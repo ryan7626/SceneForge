@@ -17,13 +17,15 @@ export async function POST(request: NextRequest) {
     // Generate an enhanced text prompt from photo metadata
     let textPrompt: string | undefined;
     try {
-      textPrompt = await enhancePrompt({
+      const promptContext = {
         dateTaken: metadata?.dateTaken,
         latitude: metadata?.latitude,
         longitude: metadata?.longitude,
         description: displayName,
         originalName: metadata?.originalName,
-      });
+      };
+      console.log("Prompt context (metadata):", JSON.stringify(promptContext, null, 2));
+      textPrompt = await enhancePrompt(promptContext);
       console.log("Enhanced prompt:", textPrompt);
     } catch (e) {
       console.warn("Prompt enhancement skipped:", e);
