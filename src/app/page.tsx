@@ -65,28 +65,6 @@ export default function Home() {
             <div className="grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-12 min-h-[75vh]">
               {/* Left Column: Upload + Photos */}
               <div className="space-y-12 pr-4 xl:border-r border-slate-100">
-                {/* Suggestions Card */}
-                <div>
-                  <h3 className="text-xs uppercase tracking-widest text-muted mb-6 font-bold">
-                    Suggested Prompts
-                  </h3>
-                  <div className="space-y-2">
-                    {[
-                      "What was I doing on December 1st, 2009?",
-                      "Show me my summer vacation photos",
-                      "Take me back to my birthday party",
-                      "Find photos from 2015",
-                    ].map((suggestion, i) => (
-                      <div
-                        key={i}
-                        className="py-3 border-b border-slate-50 text-sm text-main hover:text-primary transition-colors cursor-default"
-                      >
-                        {suggestion}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Photo Uploader */}
                 <div>
                   <h3 className="text-xs uppercase tracking-widest text-muted mb-4 font-bold">
